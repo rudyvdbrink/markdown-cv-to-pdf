@@ -1,0 +1,21 @@
+{
+  "name": "markdown-cv-to-pdf",
+  "version": "1.0.0",
+  "description": "Convert a CV in Markdown to a nicely formatted PDF with template options.",
+  "bin": {
+    "mdcv": "bin/mdcv.js"
+  },
+  "scripts": {
+    "start": "node bin/mdcv.js",
+    "example": "node bin/mdcv.js example/cv.md -o cv.pdf -t modern"
+  },
+  "type": "commonjs",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "gray-matter": "^4.0.3",
+    "handlebars": "^4.7.8",
+    "markdown-it": "^14.1.0",
+    "puppeteer": "^23.4.1"
+  }
+}

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{#if data.name}}{{data.name}} – {{/if}}CV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>{{{css}}}</style>
+  <style>
+    :root { --primary: {{primaryColor}}; }
+  </style>
+</head>
+<body class="modern">
+  {{#if showHeader}}
+  <header class="header">
+    <div class="identity">
+      {{#if data.photo}}
+        <img class="avatar" src="{{data.photo}}" alt="{{data.name}} photo" />
+      {{/if}}
+      <div>
+        <h1 class="name">{{data.name}}</h1>
+        <div class="title">{{data.title}}</div>
+      </div>
+    </div>
+    <div class="contacts">
+      {{#if data.location}}<div><span>Location:</span> {{data.location}}</div>{{/if}}
+      {{#if data.email}}<div><span>Email:</span> {{data.email}}</div>{{/if}}
+      {{#if data.phone}}<div><span>Phone:</span> {{data.phone}}</div>{{/if}}
+      {{#if data.website}}<div><span>Website:</span> {{data.website}}</div>{{/if}}
+      {{#if data.linkedin}}<div><span>LinkedIn:</span> {{data.linkedin}}</div>{{/if}}
+      {{#if data.github}}<div><span>GitHub:</span> {{data.github}}</div>{{/if}}
+    </div>
+  </header>
+  {{/if}}
+
+  <main class="layout">
+    <aside class="sidebar">
+      {{#if data.summary}}
+      <section>
+        <h2>Summary</h2>
+        <p>{{data.summary}}</p>
+      </section>
+      {{/if}}
+
+      {{#if data.skills.length}}
+      <section>
+        <h2>Skills</h2>
+        <ul class="tags">
+          {{#each data.skills}}<li>{{this}}</li>{{/each}}
+        </ul>
+      </section>
+      {{/if}}
+
+      {{#if data.languages.length}}
+      <section>
+        <h2>Languages</h2>
+        <ul>
+          {{#each data.languages}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </section>
+      {{/if}}
+
+      {{#if data.tools.length}}
+      <section>
+        <h2>Tools</h2>
+        <ul class="tags">
+          {{#each data.tools}}<li>{{this}}</li>{{/each}}
+        </ul>
+      </section>
+      {{/if}}
+    </aside>
+
+    <section class="content">
+      {{#if data.experience.length}}
+      <section>
+        <h2>Experience</h2>
+        {{#each data.experience}}
+          <article class="item">
+            <div class="item-head">
+              <div class="item-title">
+                <strong>{{this.role}}</strong>
+                {{#if this.company}} at {{this.company}}{{/if}}
+              </div>
+              <div class="item-meta">{{daterange this.start this.end}} {{#if this.location}} • {{this.location}}{{/if}}</div>
+            </div>
+            {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+            {{#if this.highlights.length}}
+            <ul>
+              {{#each this.highlights}}
+                <li>{{this}}</li>
+              {{/each}}
+            </ul>
+            {{/if}}
+          </article>
+        {{/each}}
+      </section>
+      {{/if}}
+
+      {{#if data.projects.length}}
+      <section>
+        <h2>Projects</h2>
+        {{#each data.projects}}
+          <article class="item">
+            <div class="item-head">
+              <div class="item-title"><strong>{{this.name}}</strong></div>
+              {{#if this.link}}<div class="item-meta">{{this.link}}</div>{{/if}}
+            </div>
+            {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+            {{#if this.highlights.length}}
+            <ul>
+              {{#each this.highlights}}<li>{{this}}</li>{{/each}}
+            </ul>
+            {{/if}}
+            {{#if this.stack.length}}
+              <div class="stack"><span>Stack:</span> {{join this.stack ", "}}</div>
+            {{/if}}
+          </article>
+        {{/each}}
+      </section>
+      {{/if}}
+
+      {{#if data.education.length}}
+      <section>
+        <h2>Education</h2>
+        {{#each data.education}}
+          <article class="item">
+            <div class="item-head">
+              <div class="item-title"><strong>{{this.degree}}</strong>{{#if this.school}} at {{this.school}}{{/if}}</div>
+              <div class="item-meta">{{daterange this.start this.end}} {{#if this.location}} • {{this.location}}{{/if}}</div>
+            </div>
+            {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+          </article>
+        {{/each}}
+      </section>
+      {{/if}}
+
+      {{#if data.certifications.length}}
+      <section>
+        <h2>Certifications</h2>
+        <ul>
+          {{#each data.certifications}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </section>
+      {{/if}}
+
+      {{!-- Fallback: render the Markdown content if present --}}
+      {{#if contentHtml}}
+      <section class="markdown">
+        {{{safe contentHtml}}}
+      </section>
+      {{/if}}
+    </section>
+  </main>
+
+  {{#if showFooter}}
+  <footer class="footer">
+    <span>{{data.name}}</span>
+    {{#if data.website}}<span>• {{data.website}}</span>{{/if}}
+    {{#if data.email}}<span>• {{data.email}}</span>{{/if}}
+  </footer>
+  {{/if}}
+</body>
+</html>

@@ -1,0 +1,111 @@
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  color: #0b1220;
+  line-height: 1.35;
+  background: white;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 16px;
+  padding: 20px 20px 0 20px;
+  border-bottom: 4px solid var(--primary, #0f172a);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary, #0f172a);
+}
+
+.name {
+  font-size: 26px;
+  margin: 0;
+}
+.title {
+  font-weight: 600;
+  color: var(--primary, #0f172a);
+}
+
+.contacts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 11.5px;
+  align-content: center;
+}
+.contacts span { color: #475569; margin-right: 6px; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 0.95fr 2.05fr;
+  gap: 16px;
+  padding: 16px 20px 10px 20px;
+}
+
+.sidebar section, .content section {
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 13.5px;
+  margin: 0 0 6px 0;
+  color: var(--primary, #0f172a);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1.5px solid #e2e8f0;
+  padding-bottom: 2px;
+}
+
+p { margin: 6px 0; }
+
+.item { margin-bottom: 10px; }
+.item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.item-title { font-size: 12.5px; }
+.item-meta { color: #64748b; font-size: 11px; white-space: nowrap; }
+
+ul { margin: 6px 0 6px 18px; padding: 0; }
+li { margin: 3px 0; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin-left: 0; }
+.tags li {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.stack { font-size: 11.5px; color: #334155; }
+.stack span { color: #475569; font-weight: 600; }
+
+.markdown h1, .markdown h2, .markdown h3 { margin: 8px 0 6px 0; }
+.markdown pre, .markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 8px 20px 12px 20px;
+  display: flex;
+  gap: 10px;
+  color: #64748b;
+  font-size: 11px;
+}

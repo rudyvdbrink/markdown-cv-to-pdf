@@ -1,0 +1,38 @@
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  color: #111827;
+}
+.container {
+  padding: 22px 26px;
+}
+h1 { margin: 0; font-size: 24px; }
+.bar { color: #6b7280; margin-top: 4px; font-size: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.lead { margin-top: 10px; color: #374151; }
+
+section { margin-top: 14px; }
+h2 {
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  color: var(--primary, #111827);
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.line { display: flex; justify-content: space-between; gap: 10px; }
+.left { font-size: 12.5px; }
+.right { color: #6b7280; font-size: 11.5px; white-space: nowrap; }
+
+p { margin: 6px 0; }
+ul { margin: 6px 0 6px 18px; padding: 0; }
+li { margin: 3px 0; }
+
+.markdown code, pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}

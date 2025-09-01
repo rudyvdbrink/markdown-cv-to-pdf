@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{#if data.name}}{{data.name}} – {{/if}}CV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>{{{css}}}</style>
+  <style>:root { --primary: {{primaryColor}}; }</style>
+</head>
+<body class="minimal">
+  <main class="container">
+    <h1>{{data.name}}</h1>
+    <div class="bar">
+      {{#if data.title}}<span>{{data.title}}</span>{{/if}}
+      {{#if data.location}}<span>• {{data.location}}</span>{{/if}}
+      {{#if data.email}}<span>• {{data.email}}</span>{{/if}}
+      {{#if data.website}}<span>• {{data.website}}</span>{{/if}}
+    </div>
+
+    {{#if data.summary}}
+    <p class="lead">{{data.summary}}</p>
+    {{/if}}
+
+    {{#if data.experience.length}}
+    <section>
+      <h2>Experience</h2>
+      {{#each data.experience}}
+      <div class="line">
+        <div class="left">
+          <strong>{{this.role}}</strong>{{#if this.company}} · {{this.company}}{{/if}}
+        </div>
+        <div class="right">{{daterange this.start this.end}}</div>
+      </div>
+      {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if data.skills.length}}
+    <section>
+      <h2>Skills</h2>
+      <p>{{join data.skills ", "}}</p>
+    </section>
+    {{/if}}
+
+    {{#if data.education.length}}
+    <section>
+      <h2>Education</h2>
+      {{#each data.education}}
+      <div class="line">
+        <div class="left"><strong>{{this.degree}}</strong>{{#if this.school}} · {{this.school}}{{/if}}</div>
+        <div class="right">{{daterange this.start this.end}}</div>
+      </div>
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if contentHtml}}
+    <section class="markdown">
+      {{{safe contentHtml}}}
+    </section>
+    {{/if}}
+  </main>
+</body>
+</html>

@@ -16,7 +16,8 @@ async function htmlToPdf(html, { outputPath, format = 'A4' } = {}) {
       path: outputPath,
       format,
       printBackground: true,
-      margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
+      // Let CSS @page control the margin to guarantee 12px all around
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
       displayHeaderFooter: false
     });
   } finally {

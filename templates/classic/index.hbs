@@ -83,6 +83,17 @@
     </section>
     {{/if}}
 
+    {{#if data.publications.length}}
+    <section>
+      <h2>Key Scientific Publications</h2>
+      <ul>
+        {{#each data.publications}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/if}}
+
     {{#if contentHtml}}
     <section class="markdown">
       {{{safe contentHtml}}}

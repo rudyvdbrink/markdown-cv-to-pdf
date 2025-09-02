@@ -21,23 +21,41 @@
         <div class="title">{{data.title}}</div>
       </div>
     </div>
+
     <div class="contacts">
-      {{#if data.location}}<div><span>Location:</span> {{data.location}}</div>{{/if}}
-      {{#if data.email}}<div><span>Email:</span> {{data.email}}</div>{{/if}}
-      {{#if data.phone}}<div><span>Phone:</span> {{data.phone}}</div>{{/if}}
-      {{#if data.website}}<div><span>Website:</span> {{data.website}}</div>{{/if}}
-      {{#if data.linkedin}}<div><span>LinkedIn:</span> {{data.linkedin}}</div>{{/if}}
-      {{#if data.github}}<div><span>GitHub:</span> {{data.github}}</div>{{/if}}
+      <div class="col left">
+        {{#if data.location}}<div><span>Location:</span> {{data.location}}</div>{{/if}}
+        {{#if data.phone}}<div><span>Phone:</span> <a href="tel:{{data.phone}}">{{data.phone}}</a></div>{{/if}}
+        {{#if data.email}}<div><span>Email:</span> <a href="mailto:{{data.email}}">{{data.email}}</a></div>{{/if}}
+      </div>
+      <div class="col right">
+        {{#if data.website}}<div><span>Website:</span> <a href="{{data.website}}" target="_blank" rel="noopener">{{data.website}}</a></div>{{/if}}
+        {{#if data.github}}<div><span>GitHub:</span> <a href="{{data.github}}" target="_blank" rel="noopener">{{data.github}}</a></div>{{/if}}
+        {{#if data.linkedin}}<div><span>LinkedIn:</span> <a href="{{data.linkedin}}" target="_blank" rel="noopener">{{data.linkedin}}</a></div>{{/if}}
+      </div>
     </div>
   </header>
   {{/if}}
 
+  <div class="divider"></div>
+
+  {{#if data.summary}}
+  <section class="summary-wide">
+    <h2>Summary</h2>
+    <p>{{data.summary}}</p>
+  </section>
+  {{/if}}
+
   <main class="layout">
     <aside class="sidebar">
-      {{#if data.summary}}
+      {{#if data.languages.length}}
       <section>
-        <h2>Summary</h2>
-        <p>{{data.summary}}</p>
+        <h2>Languages</h2>
+        <ul>
+          {{#each data.languages}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
       </section>
       {{/if}}
 
@@ -46,17 +64,6 @@
         <h2>Skills</h2>
         <ul class="tags">
           {{#each data.skills}}<li>{{this}}</li>{{/each}}
-        </ul>
-      </section>
-      {{/if}}
-
-      {{#if data.languages.length}}
-      <section>
-        <h2>Languages</h2>
-        <ul>
-          {{#each data.languages}}
-            <li>{{this}}</li>
-          {{/each}}
         </ul>
       </section>
       {{/if}}
@@ -135,6 +142,17 @@
       </section>
       {{/if}}
 
+      {{#if data.publications.length}}
+      <section>
+        <h2>Key Scientific Publications</h2>
+        <ul>
+          {{#each data.publications}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </section>
+      {{/if}}
+
       {{#if data.certifications.length}}
       <section>
         <h2>Certifications</h2>
@@ -146,7 +164,6 @@
       </section>
       {{/if}}
 
-      {{!-- Fallback: render the Markdown content if present --}}
       {{#if contentHtml}}
       <section class="markdown">
         {{{safe contentHtml}}}

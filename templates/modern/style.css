@@ -1,4 +1,4 @@
-@page { size: A4; margin: 0; }
+@page { margin: 48px; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
@@ -8,19 +8,33 @@ body {
   background: white;
 }
 
+/* Header (personal info) */
 .header {
   display: grid;
-  grid-template-columns: 2fr 1.2fr;
-  gap: 16px;
+  /* Keep two sub-columns: identity (left) and contacts (right) */
+  grid-template-columns: 1fr 1.5fr; /* adjust if you want the identity wider: 1.5fr 1fr */
+  gap: 10px;
   padding: 20px 20px 0 20px;
-  border-bottom: 4px solid var(--primary, #0f172a);
 }
 
+/* Divider aligns with page gutters */
+.divider {
+  border-bottom: 4px solid var(--primary, #0f172a);
+  margin: 0 20px; /* matches the main document gutters */
+}
+
+/* Summary uses the same horizontal gutters as the layout */
+.summary-wide {
+  padding: 12px 20px 8px 20px;
+}
+
+/* Identity (avatar + name/title) */
 .identity {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* align name block to top */
   gap: 16px;
 }
+.identity > div { flex: 1 1 auto; }
 
 .avatar {
   width: 72px;
@@ -30,24 +44,29 @@ body {
   border: 2px solid var(--primary, #0f172a);
 }
 
-.name {
-  font-size: 26px;
-  margin: 0;
-}
-.title {
-  font-weight: 600;
-  color: var(--primary, #0f172a);
-}
+.name { font-size: 26px; margin: 0; }
+.title { font-weight: 600; color: var(--primary, #0f172a); }
 
+/* Contacts split into two explicit columns to control ordering robustly */
 .contacts {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px 12px;
   font-size: 11.5px;
-  align-content: center;
+  align-content: start;
+}
+.contacts .col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .contacts span { color: #475569; margin-right: 6px; }
+.contacts a {
+  color: inherit;
+  text-decoration: underline;
+}
 
+/* Main body layout */
 .layout {
   display: grid;
   grid-template-columns: 0.95fr 2.05fr;
@@ -55,9 +74,7 @@ body {
   padding: 16px 20px 10px 20px;
 }
 
-.sidebar section, .content section {
-  margin-bottom: 12px;
-}
+.sidebar section, .content section { margin-bottom: 12px; }
 
 h2 {
   font-size: 13.5px;
@@ -72,11 +89,7 @@ h2 {
 p { margin: 6px 0; }
 
 .item { margin-bottom: 10px; }
-.item-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
+.item-head { display: flex; justify-content: space-between; gap: 12px; }
 .item-title { font-size: 12.5px; }
 .item-meta { color: #64748b; font-size: 11px; white-space: nowrap; }
 

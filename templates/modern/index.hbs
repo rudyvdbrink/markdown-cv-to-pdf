@@ -104,6 +104,21 @@
       </section>
       {{/if}}
 
+      {{#if data.education.length}}
+      <section>
+        <h2>Education</h2>
+        {{#each data.education}}
+          <article class="item">
+            <div class="item-head">
+              <div class="item-title"><strong>{{this.degree}}</strong>{{#if this.school}} at {{this.school}}{{/if}}</div>
+              <div class="item-meta">{{daterange this.start this.end}} {{#if this.location}} • {{this.location}}{{/if}}</div>
+            </div>
+            {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+          </article>
+        {{/each}}
+      </section>
+      {{/if}}
+
       {{#if data.projects.length}}
       <section>
         <h2>Projects</h2>
@@ -122,21 +137,6 @@
             {{#if this.stack.length}}
               <div class="stack"><span>Stack:</span> {{join this.stack ", "}}</div>
             {{/if}}
-          </article>
-        {{/each}}
-      </section>
-      {{/if}}
-
-      {{#if data.education.length}}
-      <section>
-        <h2>Education</h2>
-        {{#each data.education}}
-          <article class="item">
-            <div class="item-head">
-              <div class="item-title"><strong>{{this.degree}}</strong>{{#if this.school}} at {{this.school}}{{/if}}</div>
-              <div class="item-meta">{{daterange this.start this.end}} {{#if this.location}} • {{this.location}}{{/if}}</div>
-            </div>
-            {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
           </article>
         {{/each}}
       </section>

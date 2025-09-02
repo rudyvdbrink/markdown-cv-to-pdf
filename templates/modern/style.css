@@ -20,19 +20,19 @@ body {
 /* Divider aligns with page gutters */
 .divider {
   border-bottom: 4px solid var(--primary, #0f172a);
-  margin: 0 20px; /* matches the main document gutters */
+  margin: 12px 20px 0 20px; /* added top space above the line */
 }
 
 /* Summary uses the same horizontal gutters as the layout */
 .summary-wide {
-  padding: 12px 20px 8px 20px;
+  padding: 12px 20px 0px 20px;
 }
 
 /* Identity (avatar + name/title) */
 .identity {
   display: flex;
   align-items: flex-start; /* align name block to top */
-  gap: 16px;
+  gap: 12px;
 }
 .identity > div { flex: 1 1 auto; }
 
@@ -63,7 +63,7 @@ body {
 .contacts span { color: #475569; margin-right: 6px; }
 .contacts a {
   color: inherit;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* Main body layout */

@@ -1,9 +1,10 @@
-@page { size: A4; margin: 12; }
+@page { size: A4; margin: 48px; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #fff; color: #111827; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  line-height: 1.4;
+  line-height: 1.35;
+  font-size: 13.5px;
 }
 
 .classic-header {
@@ -13,14 +14,24 @@ body {
 }
 .classic-header h1 { margin: 0; font-size: 26px; }
 .classic-header .subtitle { color: var(--primary, #334155); font-weight: 600; margin-top: 4px; }
-.classic-header .meta { color: #4b5563; font-size: 12px; margin-top: 8px; }
+.classic-header .meta { color: #4b5563; font-size: 11.5px; margin-top: 8px; }
+
+/* Inline name + title row with dot separator */
+.classic-header .title-line {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 8px;
+}
+.classic-header .title-line .subtitle { margin-top: 0; }
+.classic-header .sep { color: #9ca3af; }
 
 .classic-main {
   padding: 12px 24px 16px 24px;
 }
 section { margin: 12px 0; }
 h2 {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--primary, #334155);
   margin: 0 0 6px 0;
   border-bottom: 1px solid #e5e7eb;
@@ -31,9 +42,31 @@ h2 {
 
 .item { margin: 8px 0; }
 .row { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-.meta { color: #6b7280; font-size: 12px; }
+.meta { color: #6b7280; font-size: 11.5px; }
 ul { margin: 6px 0 6px 18px; padding: 0; }
 li { margin: 3px 0; }
+
+/* Slightly tighter spacing specifically for Projects */
+.projects-section { line-height: 1.35; }
+.projects-section .item { margin: 18px 0; }
+.projects-section p { margin: 4px 0; }
+.projects-section ul { margin: 4px 0 4px 18px; }
+.projects-section li { margin: 4px 0; }
+
+/* Keep links looking like plain text in header meta and projects */
+.classic-header .meta a,
+.classic-header .meta a:visited,
+.classic-header .meta a:hover,
+.classic-header .meta a:active,
+.classic-header .meta a:focus,
+.projects-section a,
+.projects-section a:visited,
+.projects-section a:hover,
+.projects-section a:active,
+.projects-section a:focus {
+  color: inherit;
+  text-decoration: none;
+}
 
 .markdown h1,h2,h3 { margin: 8px 0 4px 0; }
 .markdown code, pre { font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }

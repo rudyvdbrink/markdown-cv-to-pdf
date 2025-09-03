@@ -17,6 +17,8 @@
       {{#if data.website}}<span>• {{data.website}}</span>{{/if}}
     </div>
 
+    <div class="divider"></div>
+
     {{#if data.summary}}
     <p class="lead">{{data.summary}}</p>
     {{/if}}
@@ -36,13 +38,6 @@
     </section>
     {{/if}}
 
-    {{#if data.skills.length}}
-    <section>
-      <h2>Skills</h2>
-      <p>{{join data.skills ", "}}</p>
-    </section>
-    {{/if}}
-
     {{#if data.education.length}}
     <section>
       <h2>Education</h2>
@@ -55,9 +50,23 @@
     </section>
     {{/if}}
 
-    {{#if data.publications.length}}
+    {{#if data.skills.length}}
     <section>
-      <h2>Key Scientific Publications</h2>
+      <h2>Skills</h2>
+      <p>{{join data.skills ", "}}</p>
+    </section>
+    {{/if}}
+
+    {{#if data.languages.length}}
+    <section>
+      <h2>Languages</h2>
+      <p>{{join data.languages ", "}}</p>
+    </section>
+    {{/if}}
+
+    {{#if data.publications.length}}
+    <section class="publications">
+      <h2>Publications</h2>
       <ul>
         {{#each data.publications}}
           <li>{{this}}</li>

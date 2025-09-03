@@ -9,14 +9,19 @@
 </head>
 <body class="classic">
   <header class="classic-header">
-    <h1>{{data.name}}</h1>
-    <div class="subtitle">{{data.title}}</div>
+    <div class="title-line">
+      <h1 class="name">{{data.name}}</h1>
+      {{#if data.title}}
+        <span class="sep">•</span>
+        <div class="subtitle">{{data.title}}</div>
+      {{/if}}
+    </div>
     <div class="meta">
-      {{#if data.email}}<span>{{data.email}}</span>{{/if}}
-      {{#if data.phone}}<span>• {{data.phone}}</span>{{/if}}
-      {{#if data.website}}<span>• {{data.website}}</span>{{/if}}
-      {{#if data.linkedin}}<span>• {{data.linkedin}}</span>{{/if}}
-      {{#if data.github}}<span>• {{data.github}}</span>{{/if}}
+      {{#if data.email}}<span><a href="mailto:{{data.email}}">{{data.email}}</a></span>{{/if}}
+      {{#if data.phone}}<span>• <a href="tel:{{unquote data.phone}}">{{unquote data.phone}}</a></span>{{/if}}
+      {{#if data.website}}<span>• <a href="{{data.websiteHref}}" target="_blank" rel="noopener noreferrer">{{data.website}}</a></span>{{/if}}
+      {{#if data.linkedin}}<span>• <a href="{{data.linkedinHref}}" target="_blank" rel="noopener noreferrer">{{data.linkedin}}</a></span>{{/if}}
+      {{#if data.github}}<span>• <a href="{{data.githubHref}}" target="_blank" rel="noopener noreferrer">{{data.github}}</a></span>{{/if}}
       {{#if data.location}}<span>• {{data.location}}</span>{{/if}}
     </div>
   </header>
@@ -49,28 +54,6 @@
     </section>
     {{/if}}
 
-    {{#if data.projects.length}}
-    <section>
-      <h2>Projects</h2>
-      {{#each data.projects}}
-      <article class="item">
-        <div class="row"><strong>{{this.name}}</strong> {{#if this.link}}— {{this.link}}{{/if}}</div>
-        {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
-        {{#if this.highlights.length}}
-        <ul>{{#each this.highlights}}<li>{{this}}</li>{{/each}}</ul>
-        {{/if}}
-      </article>
-      {{/each}}
-    </section>
-    {{/if}}
-
-    {{#if data.skills.length}}
-    <section>
-      <h2>Skills</h2>
-      <p>{{join data.skills ", "}}</p>
-    </section>
-    {{/if}}
-
     {{#if data.education.length}}
     <section>
       <h2>Education</h2>
@@ -82,10 +65,64 @@
       {{/each}}
     </section>
     {{/if}}
+    
+    {{#if data.skills.length}}
+    <section>
+      <h2>Skills</h2>
+      <p>{{join data.skills ", "}}</p>
+    </section>
+    {{/if}}
+
+    {{#if data.projects.length}}
+    <section class="projects-section">
+      <h2>Projects</h2>
+      {{#each data.projects}}
+      <article class="item">
+        <div class="row">
+          <strong>{{this.name}}</strong>
+          {{#if this.link}}
+            — 
+            {{#if this.linkHref}}
+              <a href="{{this.linkHref}}" target="_blank" rel="noopener noreferrer">{{this.link}}</a>
+            {{else}}
+              {{this.link}}
+            {{/if}}
+          {{/if}}
+        </div>
+        {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+        {{#if this.highlights.length}}
+        <ul>{{#each this.highlights}}<li>{{this}}</li>{{/each}}</ul>
+        {{/if}}
+      </article>
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if data.languages.length}}
+    <section>
+      <h2>Languages</h2>
+      <p>{{join data.languages ", "}}</p>
+    </section>
+    {{/if}}
+
+    {{#if data.presentations.length}}
+    <section>
+      <h2>Presentations</h2>
+      <ul>
+        {{#each data.presentations}}
+          {{#if this.title}}
+            <li>{{this.title}}{{#if this.years}} ({{this.years}}){{/if}}</li>
+          {{else}}
+            <li>{{this}}</li>
+          {{/if}}
+        {{/each}}
+      </ul>
+    </section>
+    {{/if}}
 
     {{#if data.publications.length}}
     <section>
-      <h2>Key Scientific Publications</h2>
+      <h2>Publications</h2>
       <ul>
         {{#each data.publications}}
           <li>{{this}}</li>

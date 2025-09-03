@@ -1,6 +1,6 @@
 # markdown-cv-to-pdf
 
-Convert a CV written in Markdown into a beautifully formatted PDF. Choose from built-in templates (modern, classic, minimal) or provide your own template.
+Convert a CV written in Markdown into a cleanly formatted PDF. Preserve structured content to ensure machine readability and prevent hiring algorithms from missing important information. Choose from built-in templates (modern, classic, minimal) or provide your own template.
 
 ## Features
 

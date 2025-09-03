@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>{{#if data.name}}{{data.name}} – {{/if}}CV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-Awidth, initial-scale=1" />
   <style>{{{css}}}</style>
   <style>
     :root { --primary: {{primaryColor}}; }
@@ -19,19 +19,20 @@
       <div>
         <h1 class="name">{{data.name}}</h1>
         <div class="title">{{data.title}}</div>
+        {{#if data.degree}}<div class="title">{{data.degree}}</div>{{/if}}
       </div>
     </div>
 
     <div class="contacts">
       <div class="col left">
         {{#if data.location}}<div><span>Location:</span> {{data.location}}</div>{{/if}}
-        {{#if data.phone}}<div><span>Phone:</span> <a href="tel:{{data.phone}}">{{data.phone}}</a></div>{{/if}}
+        {{#if data.phone}}<div><span>Phone:</span> <a href="tel:{{unquote data.phone}}">{{unquote data.phone}}</a></div>{{/if}}
         {{#if data.email}}<div><span>Email:</span> <a href="mailto:{{data.email}}">{{data.email}}</a></div>{{/if}}
       </div>
       <div class="col right">
-        {{#if data.website}}<div><span>Website:</span> <a href="{{data.website}}" target="_blank" rel="noopener">{{data.website}}</a></div>{{/if}}
-        {{#if data.github}}<div><span>GitHub:</span> <a href="{{data.github}}" target="_blank" rel="noopener">{{data.github}}</a></div>{{/if}}
-        {{#if data.linkedin}}<div><span>LinkedIn:</span> <a href="{{data.linkedin}}" target="_blank" rel="noopener">{{data.linkedin}}</a></div>{{/if}}
+        {{#if data.website}}<div><span>Website:</span> <a href="{{data.websiteHref}}" target="_blank" rel="noopener noreferrer">{{data.website}}</a></div>{{/if}}
+        {{#if data.github}}<div><span>GitHub:</span> <a href="{{data.githubHref}}" target="_blank" rel="noopener noreferrer">{{data.github}}</a></div>{{/if}}
+        {{#if data.linkedin}}<div><span>LinkedIn:</span> <a href="{{data.linkedinHref}}" target="_blank" rel="noopener noreferrer">{{data.linkedin}}</a></div>{{/if}}
       </div>
     </div>
   </header>
@@ -48,6 +49,41 @@
 
   <main class="layout">
     <aside class="sidebar">
+      {{#if data.keySkills.length}}
+      <section>
+        <h2>Skills</h2>
+        <ul class="skills-structured">
+          {{#each data.keySkills}}
+            <li>
+              <strong>{{this.category}}</strong>
+              {{#if this.items.length}}
+                <div class="skill-items">
+                  {{#each this.items}}
+                    <span class="skill-item">{{this}}</span>
+                  {{/each}}
+                </div>
+              {{/if}}
+
+              {{#if this.subitems.length}}
+                <ul class="subskills">
+                  {{#each this.subitems}}
+                    <li>
+                      {{#if this.label}}
+                        <span class="label">{{this.label}}:</span>
+                        {{#if this.items.length}}{{join this.items ", "}}{{else}}{{this.text}}{{/if}}
+                      {{else}}
+                        {{#if this.items.length}}{{join this.items ", "}}{{else}}{{this.text}}{{/if}}
+                      {{/if}}
+                    </li>
+                  {{/each}}
+                </ul>
+              {{/if}}
+            </li>
+          {{/each}}
+        </ul>
+      </section>
+      {{/if}}
+
       {{#if data.languages.length}}
       <section>
         <h2>Languages</h2>
@@ -55,15 +91,6 @@
           {{#each data.languages}}
             <li>{{this}}</li>
           {{/each}}
-        </ul>
-      </section>
-      {{/if}}
-
-      {{#if data.skills.length}}
-      <section>
-        <h2>Skills</h2>
-        <ul class="tags">
-          {{#each data.skills}}<li>{{this}}</li>{{/each}}
         </ul>
       </section>
       {{/if}}
@@ -118,58 +145,80 @@
         {{/each}}
       </section>
       {{/if}}
-
-      {{#if data.projects.length}}
-      <section>
-        <h2>Projects</h2>
-        {{#each data.projects}}
-          <article class="item">
-            <div class="item-head">
-              <div class="item-title"><strong>{{this.name}}</strong></div>
-              {{#if this.link}}<div class="item-meta">{{this.link}}</div>{{/if}}
-            </div>
-            {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
-            {{#if this.highlights.length}}
-            <ul>
-              {{#each this.highlights}}<li>{{this}}</li>{{/each}}
-            </ul>
-            {{/if}}
-            {{#if this.stack.length}}
-              <div class="stack"><span>Stack:</span> {{join this.stack ", "}}</div>
-            {{/if}}
-          </article>
-        {{/each}}
-      </section>
-      {{/if}}
-
-      {{#if data.publications.length}}
-      <section>
-        <h2>Key Scientific Publications</h2>
-        <ul>
-          {{#each data.publications}}
-            <li>{{this}}</li>
-          {{/each}}
-        </ul>
-      </section>
-      {{/if}}
-
-      {{#if data.certifications.length}}
-      <section>
-        <h2>Certifications</h2>
-        <ul>
-          {{#each data.certifications}}
-            <li>{{this}}</li>
-          {{/each}}
-        </ul>
-      </section>
-      {{/if}}
-
-      {{#if contentHtml}}
-      <section class="markdown">
-        {{{safe contentHtml}}}
-      </section>
-      {{/if}}
     </section>
+
+    {{#if data.projects.length}}
+    <section class="fullwidth projects-section">
+      <h2>Products &amp; Open Source Software</h2>
+      {{#each data.projects}}
+        <article class="item">
+          <div class="item-head">
+            <div class="item-title"><strong>{{this.name}}</strong></div>
+            {{#if this.link}}
+              {{#if this.linkHref}}
+                <div class="item-meta"><a href="{{this.linkHref}}" target="_blank" rel="noopener noreferrer">{{this.link}}</a></div>
+              {{else}}
+                <div class="item-meta">{{this.link}}</div>
+              {{/if}}
+            {{/if}}
+          </div>
+          {{#if this.summary}}<p>{{this.summary}}</p>{{/if}}
+          {{#if this.highlights.length}}
+          <ul>
+            {{#each this.highlights}}<li>{{this}}</li>{{/each}}
+          </ul>
+          {{/if}}
+          {{#if this.stack.length}}
+            <div class="stack"><span>Stack:</span> {{join this.stack ", "}}</div>
+          {{/if}}
+        </article>
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if data.presentations.length}}
+    <section class="fullwidth">
+      <h2>Presentations</h2>
+      <ul class="presentations-list">
+        {{#each data.presentations}}
+          <li>
+            <div class="presentation-row">
+              <span class="presentation-title">{{this.title}}</span>
+              {{#if this.years}}<span class="item-meta">{{this.years}}</span>{{/if}}
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/if}}
+
+    {{#if data.publications.length}}
+    <section class="fullwidth">
+      <h2>Publications</h2>
+      <ul>
+        {{#each data.publications}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/if}}
+
+    {{#if data.certifications.length}}
+    <section class="fullwidth">
+      <h2>Certifications</h2>
+      <ul>
+        {{#each data.certifications}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/if}}
+
+    {{#if contentHtml}}
+    <section class="fullwidth markdown">
+      {{{safe contentHtml}}}
+    </section>
+    {{/if}}
   </main>
 
   {{#if showFooter}}

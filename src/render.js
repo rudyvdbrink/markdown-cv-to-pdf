@@ -52,15 +52,68 @@ function registerHelpers() {
   Handlebars.registerHelper('safe', function (str) {
     return new Handlebars.SafeString(str || '');
   });
+
+  // Remove surrounding single or double quotes if present
+  Handlebars.registerHelper('unquote', function (str) {
+    const s = (str == null ? '' : String(str)).trim();
+    return s.replace(/^["']+|["']+$/g, '');
+  });
 }
 
 function buildMarkdownRenderer() {
-  return new MarkdownIt({
+  const md = new MarkdownIt({
     html: true,
     linkify: true,
     breaks: false,
     typographer: true
   });
+
+  // Normalize hrefs so that links without https:// get it added to the href,
+  // while keeping the visible text unchanged.
+  const normalizeHref = (input) => {
+    const s = (input == null ? '' : String(input)).trim();
+    if (!s) return s;
+
+    const lower = s.toLowerCase();
+
+    // Keep mailto: and tel: untouched
+    if (lower.startsWith('mailto:') || lower.startsWith('tel:')) return s;
+
+    // Upgrade http:// to https://
+    if (lower.startsWith('http://')) return 'https://' + s.slice(7);
+
+    // Already has a scheme (https, ftp, etc.): leave as-is
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) return s;
+
+    // Protocol-relative URL
+    if (s.startsWith('//')) return 'https:' + s;
+
+    // Anchors and root-relative paths: leave as-is
+    if (s.startsWith('#') || s.startsWith('/')) return s;
+
+    // Bare domain or path: prefix https://
+    return 'https://' + s.replace(/^\/+/, '');
+  };
+
+  // Apply at parser level
+  md.normalizeLink = normalizeHref;
+
+  // Double-ensure at render time for any links created by plugins
+  const defaultLinkOpen =
+    md.renderer.rules.link_open ||
+    function (tokens, idx, options, env, self) {
+      return self.renderToken(tokens, idx, options);
+    };
+  md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
+    const hrefIndex = tokens[idx].attrIndex('href');
+    if (hrefIndex >= 0 && tokens[idx].attrs && tokens[idx].attrs[hrefIndex]) {
+      const href = tokens[idx].attrs[hrefIndex][1];
+      tokens[idx].attrs[hrefIndex][1] = normalizeHref(href);
+    }
+    return defaultLinkOpen(tokens, idx, options, env, self);
+  };
+
+  return md;
 }
 
 /**
@@ -126,7 +179,7 @@ function parseKeyValueLines(lines) {
     if (m) {
       const key = m[1].toLowerCase().replace(/\s+/g, ' ').trim();
       const val = stripMd(m[2].trim());
-      if (['name', 'title', 'location', 'email', 'phone'].includes(key)) {
+      if (['name', 'title', 'degree', 'location', 'email', 'phone'].includes(key)) {
         data[key] = val;
       }
     }
@@ -151,18 +204,35 @@ function parseWebPresence(lines) {
     else if (u.includes('linkedin.com')) out.linkedin = text || url;
     else if (u.includes('bsky.app')) out.bluesky = text || url; // keep for future use
   }
-  const site = links.find(l => !/github\.com|linkedin\.com|bsky\.app/.test(l.url.toLowerCase()));
+  const site = links.find(
+    (l) => !/github\.com|linkedin\.com|bsky\.app/.test(l.url.toLowerCase())
+  );
   if (site) out.website = site.text || site.url;
   return out;
 }
 
 function parseDateRange(line) {
-  const cleaned = stripMd(line);
-  const m = cleaned.match(/(.+?)\s*[–-]\s*(.+)/); // en dash or hyphen
+  const cleaned = stripMd(line).trim();
+
+  // en dash (–), em dash (—), or hyphen (-)
+  let m = cleaned.match(/^\s*(.+?)\s*[–—-]\s*(.+?)\s*$/);
   if (m) {
-    return { start: m[1].trim(), end: m[2].trim() };
+    const start = m[1].trim();
+    let end = m[2].trim();
+    if (/^present$/i.test(end)) end = 'Present';
+    return { start, end };
   }
-  return { start: cleaned.trim(), end: '' };
+
+  // textual "to"/"until"
+  m = cleaned.match(/^\s*(.+?)\s+(?:to|until)\s+(.+?)\s*$/i);
+  if (m) {
+    const start = m[1].trim();
+    let end = m[2].trim();
+    if (/^present$/i.test(end)) end = 'Present';
+    return { start, end };
+  }
+
+  return { start: cleaned, end: '' };
 }
 
 function parseBullets(lines) {
@@ -190,9 +260,9 @@ function parseExperience(lines) {
       if (m) { role = m[1].trim(); company = m[2].trim(); }
       else { role = header; }
     }
-    const body = b.bodyLines.filter(l => l.trim() !== '');
+    const body = b.bodyLines.filter((l) => l.trim() !== '');
     let dateLine = '';
-    const nonBullet = body.find(l => !/^\s*-\s+/.test(l));
+    const nonBullet = body.find((l) => !/^\s*-\s+/.test(l));
     if (nonBullet) dateLine = nonBullet;
     const { start, end } = dateLine ? parseDateRange(dateLine) : { start: '', end: '' };
     const highlights = parseBullets(body);
@@ -217,9 +287,9 @@ function parseEducation(lines) {
       if (m) { degree = m[1].trim(); school = m[2].trim(); }
       else { degree = header; }
     }
-    const body = b.bodyLines.filter(l => l.trim() !== '');
+    const body = b.bodyLines.filter((l) => l.trim() !== '');
     let dateLine = '';
-    const nonBullet = body.find(l => !/^\s*-\s+/.test(l));
+    const nonBullet = body.find((l) => !/^\s*-\s+/.test(l));
     if (nonBullet) dateLine = nonBullet;
     const { start, end } = dateLine ? parseDateRange(dateLine) : { start: '', end: '' };
     const bullets = parseBullets(body);
@@ -246,19 +316,87 @@ function parseProductsProjects(lines) {
   return items;
 }
 
+// Preserve structure of KEY SKILLS bullets (categories + nested bullets)
+function parseKeySkillsStructured(lines) {
+  const items = [];
+  let current = null;
+
+  for (const raw of lines) {
+    if (!/^\s*-\s+/.test(raw)) continue;
+
+    const indent = (raw.match(/^\s*/)?.[0] || '').replace(/\t/g, '    ').length;
+    const text = raw.replace(/^\s*-\s+/, '');
+    const cleaned = stripMd(text);
+
+    if (indent <= 1) {
+      // Top-level category
+      let category = '';
+      let rest = cleaned;
+
+      const bold = cleaned.match(/^\*\*([^*]+)\*\*\s*:?\s*(.*)$/);
+      if (bold) {
+        category = bold[1].trim();
+        rest = bold[2].trim();
+      } else {
+        const colon = cleaned.match(/^([^:]+):\s*(.*)$/);
+        if (colon) {
+          category = colon[1].trim();
+          rest = colon[2].trim();
+        } else {
+          category = cleaned.trim();
+          rest = '';
+        }
+      }
+
+      const list =
+        rest ? rest.split(/,|\band\b/).map((s) => stripMd(s).trim()).filter(Boolean) : [];
+
+      current = { category, items: list, subitems: [] };
+      items.push(current);
+    } else {
+      // Nested bullet under the last category
+      if (!current) continue;
+      const sub = cleaned;
+      const i = sub.indexOf(':');
+      if (i !== -1) {
+        const label = sub.slice(0, i).trim();
+        const vals = sub
+          .slice(i + 1)
+          .split(/,|\band\b/)
+          .map((s) => stripMd(s).trim())
+          .filter(Boolean);
+        current.subitems.push({ label, items: vals });
+      } else {
+        current.subitems.push({ label: '', text: sub });
+      }
+    }
+  }
+
+  return items;
+}
+
 function parseKeySkills(lines) {
+  // Flat list for tags/back-compat
   const skills = [];
   const scan = (arr) => {
     for (const raw of arr) {
       const m = raw.match(/^\s*-\s*(?:\*\*([^*]+)\*\*|([^:]+))\s*:\s*(.+)$/);
       if (m) {
-        const list = (m[3] || '').split(/,|\band\b/).map(s => stripMd(s)).map(s => s.trim()).filter(Boolean);
+        const list = (m[3] || '')
+          .split(/,|\band\b/)
+          .map((s) => stripMd(s))
+          .map((s) => s.trim())
+          .filter(Boolean);
         skills.push(...list);
       } else {
         const n = raw.match(/^\s*-\s*(.+)$/);
         if (n && n[1].includes(':')) {
           const after = n[1].split(':').slice(1).join(':');
-          const list = after.split(/,|\band\b/).map(s => stripMd(s)).map(s => s.trim()).filter(Boolean);
+          const list = after
+            .split(/,|\band\b/)
+            .map((s) => stripMd(s))
+            .map((s) => s.trim())
+            .filter(Boolean);
           skills.push(...list);
         }
       }
@@ -299,12 +437,105 @@ function parsePublications(lines) {
   return pubs;
 }
 
+// Parse presentations into structured items with years (shown on the right) and title/text
+function parsePresentations(lines) {
+  const entries = parsePublications(lines); // reuse bullet flattener
+  const items = [];
+  for (const sRaw of entries) {
+    const s = sRaw.trim();
+
+    // Match leading years (single year, comma list, or range) followed by a colon
+    // Examples:
+    //  - "2023: Centre for ..."
+    //  - "2020, 2021: Joint symposium ..."
+    //  - "2019–2020: Something ..."
+    let m = s.match(/^(\d{4}(?:\s*[–—-]\s*\d{4}|(?:\s*,\s*\d{4})*)?)\s*:\s*(.+)$/);
+    if (m) {
+      const years = m[1].replace(/\s*,\s*/g, ', ').replace(/\s+/g, ' ').trim();
+      const title = m[2].trim();
+      items.push({ years, title });
+      continue;
+    }
+
+    // Fallback: if it starts with years but no colon, split on whitespace
+    m = s.match(/^(\d{4}(?:\s*[–—-]\s*\d{4}|(?:\s*,\s*\d{4})*)?)\s+(.*)$/);
+    if (m) {
+      const years = m[1].replace(/\s*,\s*/g, ', ').replace(/\s+/g, ' ').trim();
+      const title = m[2].trim();
+      items.push({ years, title });
+      continue;
+    }
+
+    // Last fallback: extract any years present for the meta, keep full text as title
+    const yearsFound = (s.match(/\b\d{4}\b/g) || []).join(', ');
+    items.push({ years: yearsFound, title: s });
+  }
+  return items;
+}
+
+function toAbsoluteUrl(s) {
+  const v = (s == null ? '' : String(s)).trim();
+  if (!v) return '';
+  const lower = v.toLowerCase();
+  if (lower.startsWith('mailto:') || lower.startsWith('tel:')) return v;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) return v.replace(/^http:\/\//i, 'https://');
+  if (v.startsWith('//')) return 'https:' + v;
+  if (v.startsWith('#') || v.startsWith('/')) return v; // anchors/paths unchanged
+  return 'https://' + v.replace(/^\/+/, '');
+}
+
+function toWebsiteHref(s) {
+  const href = toAbsoluteUrl(s);
+  try {
+    const u = new URL(href);
+    const host = u.hostname;
+    // Add www. if there is no subdomain already (simple heuristic: exactly two labels)
+    if (!/^www\./i.test(host)) {
+      const labels = host.split('.');
+      if (labels.length === 2) {
+        u.hostname = 'www.' + host;
+      }
+    }
+    return u.toString();
+  } catch {
+    // Fallback: if somehow not a valid URL, at least ensure https://www.
+    const v = (s == null ? '' : String(s)).trim().replace(/^https?:\/\//i, '');
+    if (!v) return '';
+    return 'https://www.' + v.replace(/^www\./i, '');
+  }
+}
+
+function toGithubHref(s) {
+  const v = (s == null ? '' : String(s)).trim();
+  if (!v) return '';
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) return v.replace(/^http:\/\//i, 'https://');
+  const noScheme = v.replace(/^https?:\/\//i, '');
+  if (/^([^/]*\.)?github\.com/i.test(noScheme)) return 'https://' + noScheme;
+  const username = v.replace(/^@/, '').replace(/^github\.com\//i, '');
+  return 'https://github.com/' + username;
+}
+
+function toLinkedinHref(s) {
+  const v = (s == null ? '' : String(s)).trim();
+  if (!v) return '';
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) return v.replace(/^http:\/\//i, 'https://');
+  const noScheme = v.replace(/^https?:\/\//i, '');
+  if (/^([^/]*\.)?linkedin\.com/i.test(noScheme)) {
+    // Ensure www. for LinkedIn
+    const hostAndPath = noScheme.replace(/^linkedin\.com/i, 'www.linkedin.com');
+    return 'https://' + hostAndPath;
+  }
+  const handle = v.replace(/^@/, '').replace(/^linkedin\.com\/in\//i, '');
+  return 'https://www.linkedin.com/in/' + handle;
+}
+
 function parseStructuredFromMarkdown(md) {
   const sections = splitSectionsByH2(md);
   const result = {
     // top-level identity
     name: '',
     title: '',
+    degree: '',
     location: '',
     email: '',
     phone: '',
@@ -313,6 +544,8 @@ function parseStructuredFromMarkdown(md) {
     linkedin: '',
     // sidebar content
     summary: '',
+    // skills
+    keySkills: [],
     skills: [],
     languages: [],
     tools: [],
@@ -321,7 +554,8 @@ function parseStructuredFromMarkdown(md) {
     projects: [],
     education: [],
     certifications: [],
-    publications: []
+    publications: [],
+    presentations: []
   };
 
   let any = false;
@@ -348,14 +582,38 @@ function parseStructuredFromMarkdown(md) {
     const ed = parseEducation(sections['EDUCATION']);
     if (ed.length) { result.education = ed; any = true; }
   }
-  if (sections['PRODUCTS AND OPEN SOURCE SOFTWARE'] || sections['PRODUCTS'] || sections['OPEN SOURCE SOFTWARE']) {
-    const lines = sections['PRODUCTS AND OPEN SOURCE SOFTWARE'] || sections['PRODUCTS'] || sections['OPEN SOURCE SOFTWARE'] || [];
+  if (
+    sections['PRODUCTS AND OPEN SOURCE SOFTWARE'] ||
+    sections['PRODUCTS'] ||
+    sections['OPEN SOURCE SOFTWARE']
+  ) {
+    const lines =
+      sections['PRODUCTS AND OPEN SOURCE SOFTWARE'] ||
+      sections['PRODUCTS'] ||
+      sections['OPEN SOURCE SOFTWARE'] ||
+      [];
     const proj = parseProductsProjects(lines);
     if (proj.length) { result.projects = proj; any = true; }
   }
   if (sections['KEY SKILLS'] || sections['SKILLS']) {
-    const ks = parseKeySkills(sections['KEY SKILLS'] || sections['SKILLS'] || []);
-    if (ks.length) { result.skills = ks; any = true; }
+    const src = sections['KEY SKILLS'] || sections['SKILLS'] || [];
+    const ksFlat = parseKeySkills(src);
+    const ksStruct = parseKeySkillsStructured(src);
+    if (ksFlat.length) { result.skills = ksFlat; any = true; }
+    if (ksStruct.length) { result.keySkills = ksStruct; any = true; }
+  }
+  if (sections['LANGUAGES']) {
+    const langs = parseBullets(sections['LANGUAGES']);
+    if (langs.length) { result.languages = langs; any = true; }
+  }
+  if (sections['SELECTED CONFERENCE PRESENTATIONS'] || sections['CONFERENCE PRESENTATIONS'] || sections['PRESENTATIONS']) {
+    const lines =
+      sections['SELECTED CONFERENCE PRESENTATIONS'] ||
+      sections['CONFERENCE PRESENTATIONS'] ||
+      sections['PRESENTATIONS'] ||
+      [];
+    const pres = parsePresentations(lines);
+    if (pres.length) { result.presentations = pres; any = true; }
   }
   if (sections['KEY SCIENTIFIC PUBLICATIONS'] || sections['PUBLICATIONS']) {
     const pubs = parsePublications(sections['KEY SCIENTIFIC PUBLICATIONS'] || sections['PUBLICATIONS'] || []);
@@ -365,7 +623,14 @@ function parseStructuredFromMarkdown(md) {
   return { data: result, hasStructured: any };
 }
 
-async function renderHtml({ markdownPath, templateName, templatePath, primaryColor = '#0f172a', showHeader = true, showFooter = true }) {
+async function renderHtml({
+  markdownPath,
+  templateName,
+  templatePath,
+  primaryColor = '#0f172a',
+  showHeader = true,
+  showFooter = true
+}) {
   registerHelpers();
 
   const raw = fs.readFileSync(markdownPath, 'utf8');
@@ -388,12 +653,31 @@ async function renderHtml({ markdownPath, templateName, templatePath, primaryCol
     ...(frontmatter || {})
   };
 
+  // Derive absolute hrefs for personal links (display text remains as provided)
+  const websiteHref = toWebsiteHref(mergedData.website || '');
+  const githubHref = toGithubHref(mergedData.github || '');
+  const linkedinHref = toLinkedinHref(mergedData.linkedin || '');
+
+  // Normalize project links to clickable hrefs
+  const projects = Array.isArray(mergedData.projects)
+    ? mergedData.projects.map((p) => ({
+        ...p,
+        linkHref: toAbsoluteUrl(p.link || '')
+      }))
+    : [];
+
   const model = {
     css,
     primaryColor,
     showHeader,
     showFooter,
-    data: mergedData,
+    data: {
+      ...mergedData,
+      websiteHref,
+      githubHref,
+      linkedinHref,
+      projects
+    },
     // If we have structured data, suppress full markdown body to avoid duplication
     contentHtml: hasStructured ? '' : contentHtml
   };
@@ -401,6 +685,7 @@ async function renderHtml({ markdownPath, templateName, templatePath, primaryCol
   // Safe defaults
   model.data.name = model.data.name || '';
   model.data.title = model.data.title || '';
+  model.data.degree = model.data.degree || '';
   model.data.location = model.data.location || '';
   model.data.email = model.data.email || '';
   model.data.phone = model.data.phone || '';

@@ -411,44 +411,96 @@ function parseSummary(lines) {
   return text;
 }
 
-function parsePublications(lines) {
-  // Collect multi-line bullet paragraphs into single strings
-  const pubs = [];
+// Helper: flatten top-level "- " bullets with soft-wrapped lines into plain strings
+function flattenBulletedParagraphs(lines) {
+  const out = [];
   let cur = null;
   for (const raw of lines) {
     const line = raw || '';
     if (/^\s*-\s+/.test(line)) {
-      // finalize previous
-      if (cur && cur.trim()) pubs.push(stripMd(cur.trim()));
+      if (cur && cur.trim()) out.push(stripMd(cur.trim()));
       cur = line.replace(/^\s*-\s+/, '').trim();
       continue;
     }
     if (cur) {
       if (line.trim() === '') {
-        // blank line ends the current bullet
-        pubs.push(stripMd(cur.trim()));
+        out.push(stripMd(cur.trim()));
         cur = null;
       } else {
         cur += ' ' + line.trim();
       }
     }
   }
-  if (cur && cur.trim()) pubs.push(stripMd(cur.trim()));
-  return pubs;
+  if (cur && cur.trim()) out.push(stripMd(cur.trim()));
+  return out;
 }
 
-// Parse presentations into structured items with years (shown on the right) and title/text
+/**
+ * Parse publications preserving nested "+ ..." descriptions.
+ * Returns array of objects: [{ html }, ...]
+ */
+function parsePublications(lines, md) {
+  const items = [];
+  let cur = null;
+
+  function pushCur() {
+    if (!cur) return;
+    const main = (cur.mainParts.join(' ').replace(/\s+/g, ' ').trim()) || '';
+    const descs = cur.descs.map((s) => s.replace(/^\s*\+\s+/, '').trim()).filter(Boolean);
+
+    if (main) {
+      const mainHtml = md.renderInline(main);
+      let html = mainHtml;
+      for (const d of descs) {
+        const descInline = md.renderInline(d);
+        html += `<div class="pub-description"><em>${descInline}</em></div>`;
+      }
+      items.push({ html });
+    }
+    cur = null;
+  }
+
+  for (const raw of lines) {
+    const line = raw || '';
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      // blank line ends current item
+      pushCur();
+      continue;
+    }
+
+    const top = line.match(/^\s*-\s+(.*)$/);
+    if (top) {
+      // start new publication
+      pushCur();
+      cur = { mainParts: [top[1].trim()], descs: [] };
+      continue;
+    }
+
+    if (cur) {
+      const nestedPlus = line.match(/^\s{1,}\+\s+(.*)$/);
+      if (nestedPlus) {
+        cur.descs.push(nestedPlus[1]);
+      } else {
+        // continuation of main line
+        cur.mainParts.push(trimmed);
+      }
+    }
+  }
+  pushCur();
+
+  return items;
+}
+
+// Parse presentations into structured items with years and title/text
 function parsePresentations(lines) {
-  const entries = parsePublications(lines); // reuse bullet flattener
+  const entries = flattenBulletedParagraphs(lines);
   const items = [];
   for (const sRaw of entries) {
     const s = sRaw.trim();
 
     // Match leading years (single year, comma list, or range) followed by a colon
-    // Examples:
-    //  - "2023: Centre for ..."
-    //  - "2020, 2021: Joint symposium ..."
-    //  - "2019–2020: Something ..."
     let m = s.match(/^(\d{4}(?:\s*[–—-]\s*\d{4}|(?:\s*,\s*\d{4})*)?)\s*:\s*(.+)$/);
     if (m) {
       const years = m[1].replace(/\s*,\s*/g, ', ').replace(/\s+/g, ' ').trim();
@@ -529,8 +581,8 @@ function toLinkedinHref(s) {
   return 'https://www.linkedin.com/in/' + handle;
 }
 
-function parseStructuredFromMarkdown(md) {
-  const sections = splitSectionsByH2(md);
+function parseStructuredFromMarkdown(mdSource, mdRenderer) {
+  const sections = splitSectionsByH2(mdSource);
   const result = {
     // top-level identity
     name: '',
@@ -616,7 +668,10 @@ function parseStructuredFromMarkdown(md) {
     if (pres.length) { result.presentations = pres; any = true; }
   }
   if (sections['KEY SCIENTIFIC PUBLICATIONS'] || sections['PUBLICATIONS']) {
-    const pubs = parsePublications(sections['KEY SCIENTIFIC PUBLICATIONS'] || sections['PUBLICATIONS'] || []);
+    const pubs = parsePublications(
+      sections['KEY SCIENTIFIC PUBLICATIONS'] || sections['PUBLICATIONS'] || [],
+      mdRenderer || buildMarkdownRenderer()
+    );
     if (pubs.length) { result.publications = pubs; any = true; }
   }
 
@@ -646,7 +701,7 @@ async function renderHtml({
   const template = Handlebars.compile(templateSrc, { noEscape: false });
 
   // Try to parse structured data from Markdown if frontmatter is missing/partial
-  const { data: parsed, hasStructured } = parseStructuredFromMarkdown(md);
+  const { data: parsed, hasStructured } = parseStructuredFromMarkdown(md, mdIt);
 
   const mergedData = {
     ...parsed,

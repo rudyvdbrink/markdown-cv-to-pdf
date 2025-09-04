@@ -47,21 +47,8 @@ Direct links to the rendered PDFs in the example folder:
 - Classic template: [example/cv_classic.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_classic.pdf)
 - Minimal template: [example/cv_minimal.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_minimal.pdf)
 
-Embedded preview of the Modern template (may not render in all GitHub views; use the link above if it doesn’t load):
+<img width="1253" height="1776" alt="image" src="https://github.com/user-attachments/assets/1bf7e5bf-0ad5-4c85-ac81-6aab7e636e22" />
 
-<div align="center">
-  <object
-    data="https://github.com/rudyvdbrink/markdown-cv-to-pdf/raw/main/example/cv_modern.pdf"
-    type="application/pdf"
-    width="100%"
-    height="800">
-    <p>
-      <a href="https://github.com/rudyvdbrink/markdown-cv-to-pdf/raw/main/example/cv_modern.pdf">
-        View the Modern template PDF
-      </a>
-    </p>
-  </object>
-</div>
 
 ## CLI
 

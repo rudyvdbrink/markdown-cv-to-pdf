@@ -39,6 +39,30 @@ npm install -g .
 mdcv path/to/your-cv.md -o my-cv.pdf -t classic
 ```
 
+## Examples
+
+Direct links to the rendered PDFs in the example folder:
+
+- Modern template: [example/cv_modern.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_modern.pdf)
+- Classic template: [example/cv_classic.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_classic.pdf)
+- Minimal template: [example/cv_minimal.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_minimal.pdf)
+
+Embedded preview of the Modern template (may not render in all GitHub views; use the link above if it doesn’t load):
+
+<div align="center">
+  <object
+    data="https://github.com/rudyvdbrink/markdown-cv-to-pdf/raw/main/example/cv_modern.pdf"
+    type="application/pdf"
+    width="100%"
+    height="800">
+    <p>
+      <a href="https://github.com/rudyvdbrink/markdown-cv-to-pdf/raw/main/example/cv_modern.pdf">
+        View the Modern template PDF
+      </a>
+    </p>
+  </object>
+</div>
+
 ## CLI
 
 ```

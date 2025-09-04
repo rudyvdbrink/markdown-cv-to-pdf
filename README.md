@@ -47,7 +47,7 @@ Direct links to the rendered PDFs in the example folder:
 - Classic template: [example/cv_classic.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_classic.pdf)
 - Minimal template: [example/cv_minimal.pdf](https://github.com/rudyvdbrink/markdown-cv-to-pdf/blob/main/example/cv_minimal.pdf)
 
-<img width="1253" height="1776" alt="image" src="https://github.com/user-attachments/assets/1bf7e5bf-0ad5-4c85-ac81-6aab7e636e22" />
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/1bf7e5bf-0ad5-4c85-ac81-6aab7e636e22" />
 
 
 ## CLI
